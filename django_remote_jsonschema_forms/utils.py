@@ -1,5 +1,5 @@
-from django.utils.functional import Promise
 from django.utils.encoding import force_str
+from django.utils.functional import Promise
 
 
 def resolve_promise(o):
