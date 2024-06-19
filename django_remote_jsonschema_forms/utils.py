@@ -1,5 +1,7 @@
-from django.utils.functional import Promise
 from django.utils.encoding import force_str
+from django.utils.functional import Promise
+
+from django_remote_jsonschema_forms import logger
 
 
 def resolve_promise(o):
@@ -11,10 +13,13 @@ def resolve_promise(o):
     elif isinstance(o, Promise):
         try:
             o = force_str(o)
-        except:
+        except Exception as e:
+            logger.warning(e)
+
             try:
                 o = [resolve_promise(x) for x in o]
-            except:
+            except Exception as ex:
+                logger.warning(ex)
                 raise Exception("Unable to resolve lazy object %s" % o)
     elif callable(o):
         o = o()
