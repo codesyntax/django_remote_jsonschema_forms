@@ -38,12 +38,12 @@ You can create a view to expose it in JSON Schema like this:
 
 ```python
 from .forms import MyForm
-from django_remote_jsonschema_forms.forms import RemoteJSONSChemaForm
+from django_remote_jsonschema_forms.forms import RemoteJSONSchemaForm
 from django.http import JsonResponse
 
 def json_schema_form_view(request):
     form = MyForm()
-    remote_form = RemoteJSONSChemaForm(form)
+    remote_form = RemoteJSONSchemaForm(form)
     return JsonResponse(remote_form.as_dict())
 
 ```

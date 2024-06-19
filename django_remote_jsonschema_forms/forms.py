@@ -4,7 +4,7 @@ from django_remote_jsonschema_forms import fields, logger
 from django_remote_jsonschema_forms.utils import resolve_promise
 
 
-class RemoteJSONSChemaForm(object):
+class RemoteJSONSchemaForm(object):
     def __init__(self, form, *args, **kwargs):
         self.form = form
 
