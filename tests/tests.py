@@ -3,7 +3,7 @@
 
 from django.test import TestCase
 from .models import MyForm
-from ..forms import RemoteJSONSchemaForm
+from django_remote_jsonschema_forms import RemoteJSONSchemaForm
 
 
 class FormTest(TestCase):
