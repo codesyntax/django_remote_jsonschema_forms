@@ -10,48 +10,55 @@ class RemoteJSONSChemaForm(object):
 
         self.all_fields = set(self.form.fields.keys())
 
-        self.excluded_fields = set(kwargs.pop('exclude', []))
-        self.included_fields = set(kwargs.pop('include', []))
-        self.readonly_fields = set(kwargs.pop('readonly', []))
-        self.ordered_fields = kwargs.pop('ordering', [])
+        self.excluded_fields = set(kwargs.pop("exclude", []))
+        self.included_fields = set(kwargs.pop("include", []))
+        self.readonly_fields = set(kwargs.pop("readonly", []))
+        self.ordered_fields = kwargs.pop("ordering", [])
 
-        self.fieldsets = kwargs.pop('fieldsets', {})
+        self.fieldsets = kwargs.pop("fieldsets", {})
 
         # Make sure all passed field lists are valid
         if self.excluded_fields and not (self.all_fields >= self.excluded_fields):
             logger.warning(
-                'Excluded fields %s are not present in form fields' % (self.excluded_fields - self.all_fields))
+                "Excluded fields %s are not present in form fields"
+                % (self.excluded_fields - self.all_fields)
+            )
             self.excluded_fields = set()
 
         if self.included_fields and not (self.all_fields >= self.included_fields):
             logger.warning(
-                'Included fields %s are not present in form fields' % (self.included_fields - self.all_fields))
+                "Included fields %s are not present in form fields"
+                % (self.included_fields - self.all_fields)
+            )
             self.included_fields = set()
 
         if self.readonly_fields and not (self.all_fields >= self.readonly_fields):
             logger.warning(
-                'Readonly fields %s are not present in form fields' % (self.readonly_fields - self.all_fields))
+                "Readonly fields %s are not present in form fields"
+                % (self.readonly_fields - self.all_fields)
+            )
             self.readonly_fields = set()
 
         if self.ordered_fields and not (self.all_fields >= set(self.ordered_fields)):
             logger.warning(
-                'Readonly fields %s are not present in form fields' % (set(self.ordered_fields) - self.all_fields))
+                "Readonly fields %s are not present in form fields"
+                % (set(self.ordered_fields) - self.all_fields)
+            )
             self.ordered_fields = []
 
         if self.included_fields | self.excluded_fields:
             logger.warning(
-                'Included and excluded fields have following fields %s in common' % (
-                    set(self.ordered_fields) - self.all_fields
-                )
+                "Included and excluded fields have following fields %s in common"
+                % (set(self.ordered_fields) - self.all_fields)
             )
             self.excluded_fields = set()
             self.included_fields = set()
 
         # Extend exclude list from include list
-        self.excluded_fields |= (self.included_fields - self.all_fields)
+        self.excluded_fields |= self.included_fields - self.all_fields
 
         if not self.ordered_fields:
-            if hasattr(self.form.fields, 'keyOrder'):
+            if hasattr(self.form.fields, "keyOrder"):
                 self.ordered_fields = self.form.fields.keyOrder
             else:
                 self.ordered_fields = self.form.fields.keys()
@@ -60,24 +67,34 @@ class RemoteJSONSChemaForm(object):
 
         # Construct ordered field list considering exclusions
         for field_name in self.ordered_fields:
-            if field_name in self.excluded_fields or field_name == 'question' or field_name == 'response':
+            if (
+                field_name in self.excluded_fields
+                or field_name == "question"
+                or field_name == "response"
+            ):
                 continue
-            
+
             self.fields.append(field_name)
 
         # Validate fieldset
         fieldset_fields = set()
         if self.fieldsets:
             for fieldset_name, fieldsets_data in self.fieldsets:
-                if 'fields' in fieldsets_data:
-                    fieldset_fields |= set(fieldsets_data['fields'])
+                if "fields" in fieldsets_data:
+                    fieldset_fields |= set(fieldsets_data["fields"])
 
         if not (self.all_fields >= fieldset_fields):
-            logger.warning('Following fieldset fields are invalid %s' % (fieldset_fields - self.all_fields))
+            logger.warning(
+                "Following fieldset fields are invalid %s"
+                % (fieldset_fields - self.all_fields)
+            )
             self.fieldsets = {}
 
         if not (set(self.fields) >= fieldset_fields):
-            logger.warning('Following fieldset fields are excluded %s' % (fieldset_fields - set(self.fields)))
+            logger.warning(
+                "Following fieldset fields are excluded %s"
+                % (fieldset_fields - set(self.fields))
+            )
             self.fieldsets = {}
 
     def as_dict(self):
@@ -130,21 +147,21 @@ class RemoteJSONSChemaForm(object):
         form_dict = OrderedDict()
 
         try:
-            form_dict['title'] = self.form.title
+            form_dict["title"] = self.form.title
         except:
-            form_dict['title'] = ''
+            form_dict["title"] = ""
         try:
-            form_dict['description'] = self.form.description
+            form_dict["description"] = self.form.description
         except:
-            form_dict['description'] = ''
-        form_dict['properties'] = OrderedDict()
-        form_dict['required'] = []
-        form_dict['fieldsets'] = self.fields
+            form_dict["description"] = ""
+        form_dict["properties"] = OrderedDict()
+        form_dict["required"] = []
+        form_dict["fieldsets"] = self.fields
 
         # Get required fields
         for field in self.form.fields:
-            if self.form.fields[field].required and field != 'response':
-                form_dict['required'].append(field)
+            if self.form.fields[field].required and field != "response":
+                form_dict["required"].append(field)
 
         # Get properties' values
         initial_data = {}
@@ -160,20 +177,24 @@ class RemoteJSONSChemaForm(object):
 
             # Instantiate the Remote Forms equivalent of the field if possible
             # in order to retrieve the field contents as a dictionary.
-            remote_field_class_name = 'Remote%s' % field.__class__.__name__
+            remote_field_class_name = "Remote%s" % field.__class__.__name__
             try:
                 remote_field_class = getattr(fields, remote_field_class_name)
-                remote_field = remote_field_class(field, form_initial_field_data, field_name=name)
+                remote_field = remote_field_class(
+                    field, form_initial_field_data, field_name=name
+                )
             except Exception(e):
-                logger.warning('Error serializing field %s: %s', remote_field_class_name, str(e))
+                logger.warning(
+                    "Error serializing field %s: %s", remote_field_class_name, str(e)
+                )
                 field_dict = {}
             else:
                 field_dict = remote_field.as_dict()
 
             if name in self.readonly_fields:
-                field_dict['readonly'] = True
+                field_dict["readonly"] = True
 
-            if name != 'question' and name != 'response':
-                form_dict['properties'][name] = field_dict
+            if name != "question" and name != "response":
+                form_dict["properties"][name] = field_dict
 
         return resolve_promise(form_dict)

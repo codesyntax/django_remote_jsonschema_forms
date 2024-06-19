@@ -28,10 +28,10 @@ class RemoteField(object):
         field_dict = OrderedDict()
 
         # if self.field.help_text != '':
-        field_dict['description'] = self.field.help_text
+        field_dict["description"] = self.field.help_text
 
-        if self.field.label != '':
-            field_dict['title'] = self.field.label
+        if self.field.label != "":
+            field_dict["title"] = self.field.label
 
         return field_dict
 
@@ -40,20 +40,18 @@ class RemoteCharField(RemoteField):
     def as_dict(self):
         field_dict = super(RemoteCharField, self).as_dict()
 
-        update_fields = {
-            'type': 'string'
-        }
+        update_fields = {"type": "string"}
 
         if self.field.max_length:
-            update_fields['maxLength'] = self.field.max_length
+            update_fields["maxLength"] = self.field.max_length
 
         if self.field.min_length:
-            update_fields['minLength'] = self.field.min_length
+            update_fields["minLength"] = self.field.min_length
 
         try:
-            if self.field.widget.attrs['cols']:
-                update_fields['maxLength'] = 750
-                update_fields['widget'] = 'textarea'
+            if self.field.widget.attrs["cols"]:
+                update_fields["maxLength"] = 750
+                update_fields["widget"] = "textarea"
         except:
             pass
 
@@ -66,11 +64,13 @@ class RemoteIntegerField(RemoteField):
     def as_dict(self):
         field_dict = super(RemoteIntegerField, self).as_dict()
 
-        field_dict.update({
-            'type': 'number',
-            'max_value': self.field.max_value,
-            'min_value': self.field.min_value
-        })
+        field_dict.update(
+            {
+                "type": "number",
+                "max_value": self.field.max_value,
+                "min_value": self.field.min_value,
+            }
+        )
 
         return field_dict
 
@@ -84,10 +84,12 @@ class RemoteDecimalField(RemoteIntegerField):
     def as_dict(self):
         field_dict = super(RemoteDecimalField, self).as_dict()
 
-        field_dict.update({
-            'max_digits': self.field.max_digits,
-            'decimal_places': self.field.decimal_places
-        })
+        field_dict.update(
+            {
+                "max_digits": self.field.max_digits,
+                "decimal_places": self.field.decimal_places,
+            }
+        )
 
         return field_dict
 
@@ -96,24 +98,26 @@ class RemoteTimeField(RemoteField):
     def as_dict(self):
         field_dict = super(RemoteTimeField, self).as_dict()
 
-        field_dict['input_formats'] = self.field.input_formats
+        field_dict["input_formats"] = self.field.input_formats
 
-        if (field_dict['initial']):
-            if callable(field_dict['initial']):
-                field_dict['initial'] = field_dict['initial']()
+        if field_dict["initial"]:
+            if callable(field_dict["initial"]):
+                field_dict["initial"] = field_dict["initial"]()
 
             # If initial value is datetime then convert it using first available input format
-            if (isinstance(field_dict['initial'], (datetime.datetime, datetime.time, datetime.date))):
-                if not len(field_dict['input_formats']):
-                    if isinstance(field_dict['initial'], datetime.date):
-                        field_dict['input_formats'] = settings.DATE_INPUT_FORMATS
-                    elif isinstance(field_dict['initial'], datetime.time):
-                        field_dict['input_formats'] = settings.TIME_INPUT_FORMATS
-                    elif isinstance(field_dict['initial'], datetime.datetime):
-                        field_dict['input_formats'] = settings.DATETIME_INPUT_FORMATS
+            if isinstance(
+                field_dict["initial"], (datetime.datetime, datetime.time, datetime.date)
+            ):
+                if not len(field_dict["input_formats"]):
+                    if isinstance(field_dict["initial"], datetime.date):
+                        field_dict["input_formats"] = settings.DATE_INPUT_FORMATS
+                    elif isinstance(field_dict["initial"], datetime.time):
+                        field_dict["input_formats"] = settings.TIME_INPUT_FORMATS
+                    elif isinstance(field_dict["initial"], datetime.datetime):
+                        field_dict["input_formats"] = settings.DATETIME_INPUT_FORMATS
 
-                input_format = field_dict['input_formats'][0]
-                field_dict['initial'] = field_dict['initial'].strftime(input_format)
+                input_format = field_dict["input_formats"][0]
+                field_dict["initial"] = field_dict["initial"].strftime(input_format)
 
         return field_dict
 
@@ -146,18 +150,20 @@ class RemoteEmailField(RemoteCharField):
 class RemoteFileField(RemoteField):
     def as_dict(self):
         field_dict = super(RemoteFileField, self).as_dict()
-        
+
         if self.field.max_length:
-            field_dict['max_length'] = self.field.max_length
-        field_dict.update({
-            'type': 'array', 
-            "items": {
-                "description": "",
-                "title": "",
-                "type": "string",
-                "widget": "file"
-                }
-            })
+            field_dict["max_length"] = self.field.max_length
+        field_dict.update(
+            {
+                "type": "array",
+                "items": {
+                    "description": "",
+                    "title": "",
+                    "type": "string",
+                    "widget": "file",
+                },
+            }
+        )
 
         return field_dict
 
@@ -176,9 +182,7 @@ class RemoteBooleanField(RemoteField):
     def as_dict(self):
         field_dict = super(RemoteBooleanField, self).as_dict()
 
-        update_fields = {
-            'type': 'boolean'
-        }
+        update_fields = {"type": "boolean"}
 
         field_dict.update(update_fields)
 
@@ -194,12 +198,9 @@ class RemoteChoiceField(RemoteField):
     def as_dict(self):
         field_dict = super(RemoteChoiceField, self).as_dict()
 
-        field_dict['choices'] = []
+        field_dict["choices"] = []
         for key, value in self.field.choices:
-            field_dict['choices'].append({
-                'value': key,
-                'display': value
-            })
+            field_dict["choices"].append({"value": key, "display": value})
 
         return field_dict
 
@@ -213,10 +214,9 @@ class RemoteTypedChoiceField(RemoteChoiceField):
     def as_dict(self):
         field_dict = super(RemoteTypedChoiceField, self).as_dict()
 
-        field_dict.update({
-            'coerce': self.field.coerce,
-            'empty_value': self.field.empty_value
-        })
+        field_dict.update(
+            {"coerce": self.field.coerce, "empty_value": self.field.empty_value}
+        )
 
         return field_dict
 
@@ -235,10 +235,9 @@ class RemoteTypedMultipleChoiceField(RemoteMultipleChoiceField):
     def as_dict(self):
         field_dict = super(RemoteTypedMultipleChoiceField, self).as_dict()
 
-        field_dict.update({
-            'coerce': self.field.coerce,
-            'empty_value': self.field.empty_value
-        })
+        field_dict.update(
+            {"coerce": self.field.coerce, "empty_value": self.field.empty_value}
+        )
 
         return field_dict
 
@@ -256,7 +255,7 @@ class RemoteMultiValueField(RemoteField):
     def as_dict(self):
         field_dict = super(RemoteMultiValueField, self).as_dict()
 
-        field_dict['fields'] = self.field.fields
+        field_dict["fields"] = self.field.fields
 
         return field_dict
 
@@ -265,11 +264,13 @@ class RemoteFilePathField(RemoteChoiceField):
     def as_dict(self):
         field_dict = super(RemoteFilePathField, self).as_dict()
 
-        field_dict.update({
-            'path': self.field.path,
-            'match': self.field.match,
-            'recursive': self.field.recursive
-        })
+        field_dict.update(
+            {
+                "path": self.field.path,
+                "match": self.field.match,
+                "recursive": self.field.recursive,
+            }
+        )
 
         return field_dict
 
@@ -278,10 +279,12 @@ class RemoteSplitDateTimeField(RemoteMultiValueField):
     def as_dict(self):
         field_dict = super(RemoteSplitDateTimeField, self).as_dict()
 
-        field_dict.update({
-            'input_date_formats': self.field.input_date_formats,
-            'input_time_formats': self.field.input_time_formats
-        })
+        field_dict.update(
+            {
+                "input_date_formats": self.field.input_date_formats,
+                "input_time_formats": self.field.input_time_formats,
+            }
+        )
 
         return field_dict
 

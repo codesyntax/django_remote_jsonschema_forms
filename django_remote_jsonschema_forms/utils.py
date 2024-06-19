@@ -1,6 +1,7 @@
 from django.utils.functional import Promise
 from django.utils.encoding import force_str
 
+
 def resolve_promise(o):
     if isinstance(o, dict):
         for k, v in o.items():
@@ -14,7 +15,7 @@ def resolve_promise(o):
             try:
                 o = [resolve_promise(x) for x in o]
             except:
-                raise Exception('Unable to resolve lazy object %s' % o)
+                raise Exception("Unable to resolve lazy object %s" % o)
     elif callable(o):
         o = o()
 
