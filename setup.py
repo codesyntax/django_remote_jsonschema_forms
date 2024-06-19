@@ -23,7 +23,7 @@ setup(
     package_data={},
     zip_safe=False,
     requires=[],
-    install_requires=["django"],
+    install_requires=["django>=4.2"],
     python_requires=">=3.8",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
