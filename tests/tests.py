@@ -2,8 +2,10 @@
 
 
 from django.test import TestCase
-from .models import MyForm
+
 from django_remote_jsonschema_forms import RemoteJSONSchemaForm
+
+from .models import MyForm
 
 
 class FormTest(TestCase):

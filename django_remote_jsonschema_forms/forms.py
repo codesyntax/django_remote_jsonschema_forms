@@ -148,11 +148,13 @@ class RemoteJSONSchemaForm(object):
 
         try:
             form_dict["title"] = self.form.title
-        except:
+        except Exception as e:
+            logger.info(e)
             form_dict["title"] = ""
         try:
             form_dict["description"] = self.form.description
-        except:
+        except Exception as e:
+            logger.info(e)
             form_dict["description"] = ""
         form_dict["properties"] = OrderedDict()
         form_dict["required"] = []
@@ -164,7 +166,6 @@ class RemoteJSONSchemaForm(object):
                 form_dict["required"].append(field)
 
         # Get properties' values
-        initial_data = {}
         for name, field in [(x, self.form.fields[x]) for x in self.fields]:
             # Retrieve the initial data from the form itself if it exists so
             # that we properly handle which initial data should be returned in
@@ -183,7 +184,7 @@ class RemoteJSONSchemaForm(object):
                 remote_field = remote_field_class(
                     field, form_initial_field_data, field_name=name
                 )
-            except Exception(e):
+            except Exception as e:
                 logger.warning(
                     "Error serializing field %s: %s", remote_field_class_name, str(e)
                 )
