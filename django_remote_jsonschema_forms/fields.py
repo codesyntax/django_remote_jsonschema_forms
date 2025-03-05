@@ -6,6 +6,7 @@ from django.conf import settings
 
 from django_remote_jsonschema_forms import logger, widgets
 
+from django.forms.models import ModelChoiceIteratorValue
 
 class RemoteField(object):
     """
@@ -99,26 +100,27 @@ class RemoteTimeField(RemoteField):
         field_dict = super(RemoteTimeField, self).as_dict()
 
         field_dict["input_formats"] = self.field.input_formats
+        try:
+            if field_dict["initial"]:
+                if callable(field_dict["initial"]):
+                    field_dict["initial"] = field_dict["initial"]()
 
-        if field_dict["initial"]:
-            if callable(field_dict["initial"]):
-                field_dict["initial"] = field_dict["initial"]()
+                # If initial value is datetime then convert it using first available input format
+                if isinstance(
+                    field_dict["initial"], (datetime.datetime, datetime.time, datetime.date)
+                ):
+                    if not len(field_dict["input_formats"]):
+                        if isinstance(field_dict["initial"], datetime.date):
+                            field_dict["input_formats"] = settings.DATE_INPUT_FORMATS
+                        elif isinstance(field_dict["initial"], datetime.time):
+                            field_dict["input_formats"] = settings.TIME_INPUT_FORMATS
+                        elif isinstance(field_dict["initial"], datetime.datetime):
+                            field_dict["input_formats"] = settings.DATETIME_INPUT_FORMATS
 
-            # If initial value is datetime then convert it using first available input format
-            if isinstance(
-                field_dict["initial"], (datetime.datetime, datetime.time, datetime.date)
-            ):
-                if not len(field_dict["input_formats"]):
-                    if isinstance(field_dict["initial"], datetime.date):
-                        field_dict["input_formats"] = settings.DATE_INPUT_FORMATS
-                    elif isinstance(field_dict["initial"], datetime.time):
-                        field_dict["input_formats"] = settings.TIME_INPUT_FORMATS
-                    elif isinstance(field_dict["initial"], datetime.datetime):
-                        field_dict["input_formats"] = settings.DATETIME_INPUT_FORMATS
-
-                input_format = field_dict["input_formats"][0]
-                field_dict["initial"] = field_dict["initial"].strftime(input_format)
-
+                    input_format = field_dict["input_formats"][0]
+                    field_dict["initial"] = field_dict["initial"].strftime(input_format)
+        except Exception as e:
+            pass
         return field_dict
 
 
@@ -207,7 +209,17 @@ class RemoteChoiceField(RemoteField):
 
 class RemoteModelChoiceField(RemoteChoiceField):
     def as_dict(self):
-        return super(RemoteModelChoiceField, self).as_dict()
+        field_dict = super(RemoteModelChoiceField, self).as_dict()
+
+        serialized_choices = []
+        for choice in field_dict.get("choices", []):
+            if isinstance(choice["value"], ModelChoiceIteratorValue):
+                serialized_choices.append(choice["display"])
+        
+        field_dict.pop('choices', None)
+        field_dict["enum"] = serialized_choices
+
+        return field_dict
 
 
 class RemoteTypedChoiceField(RemoteChoiceField):
@@ -228,7 +240,16 @@ class RemoteMultipleChoiceField(RemoteChoiceField):
 
 class RemoteModelMultipleChoiceField(RemoteMultipleChoiceField):
     def as_dict(self):
-        return super(RemoteModelMultipleChoiceField, self).as_dict()
+        field_dict =  super(RemoteModelMultipleChoiceField, self).as_dict()
+        serialized_choices = []
+        for choice in field_dict.get("choices", []):
+            if isinstance(choice["value"], ModelChoiceIteratorValue):
+                serialized_choices.append(choice["display"])
+        
+        field_dict.pop('choices', None)
+        field_dict["enum"] = serialized_choices
+
+        return field_dict
 
 
 class RemoteTypedMultipleChoiceField(RemoteMultipleChoiceField):

@@ -3,6 +3,7 @@ from collections import OrderedDict
 from django_remote_jsonschema_forms import fields, logger
 from django_remote_jsonschema_forms.utils import resolve_promise
 
+import json 
 
 class RemoteJSONSChemaForm(object):
     def __init__(self, form, *args, **kwargs):
@@ -198,3 +199,39 @@ class RemoteJSONSChemaForm(object):
                 form_dict["properties"][name] = field_dict
 
         return resolve_promise(form_dict)
+
+    def uiSchema_as_dict(self):
+        uiSchema = {}
+        
+        for name in self.fields:
+            field = self.form.fields[name]
+            uiSchema[name] = {}
+            
+            # Configurar widgets basados en el tipo de campo
+            field_type = type(field).__name__
+            if field_type == "CharField" and getattr(field, 'widget', None):
+                widget_type = type(field.widget).__name__
+                if widget_type == "Textarea":
+                    uiSchema[name]["ui:widget"] = "tinymce"
+                elif widget_type == "PasswordInput":
+                    uiSchema[name]["ui:widget"] = "password"
+            
+            elif field_type == "BooleanField":
+                uiSchema[name]["ui:widget"] = "checkbox"
+            
+            elif field_type == "ChoiceField":
+                uiSchema[name]["ui:widget"] = "select"
+            
+            elif field_type == "FileField":
+                uiSchema[name]["ui:options"] = {"accept": getattr(field.widget, 'attrs', {}).get("accept", "*")}
+
+                uiSchema[name]['items']= { 'ui:widget':'file'}
+
+            
+            if name in self.readonly_fields:
+                uiSchema[name]["ui:disabled"] = True
+            
+            if name in self.excluded_fields:
+                continue
+            
+        return resolve_promise(uiSchema)
