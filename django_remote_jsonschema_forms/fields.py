@@ -200,9 +200,9 @@ class RemoteChoiceField(RemoteField):
     def as_dict(self):
         field_dict = super(RemoteChoiceField, self).as_dict()
 
-        field_dict["choices"] = []
+        field_dict["oneOf"] = []
         for key, value in self.field.choices:
-            field_dict["choices"].append({"value": key, "display": value})
+            field_dict["oneOf"].append({"const": key, "title": value})
 
         return field_dict
 
