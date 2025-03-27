@@ -8,6 +8,7 @@ from django_remote_jsonschema_forms import logger, widgets
 
 from django.forms.models import ModelChoiceIteratorValue
 
+
 class RemoteField(object):
     """
     A base object for being able to return a Django Form Field as a Python
@@ -51,7 +52,7 @@ class RemoteCharField(RemoteField):
 
         try:
             if self.field.widget.attrs["cols"]:
-                update_fields["maxLength"] = 750
+                #                update_fields["maxLength"] = 750
                 update_fields["widget"] = "textarea"
         except:
             pass
@@ -107,7 +108,8 @@ class RemoteTimeField(RemoteField):
 
                 # If initial value is datetime then convert it using first available input format
                 if isinstance(
-                    field_dict["initial"], (datetime.datetime, datetime.time, datetime.date)
+                    field_dict["initial"],
+                    (datetime.datetime, datetime.time, datetime.date),
                 ):
                     if not len(field_dict["input_formats"]):
                         if isinstance(field_dict["initial"], datetime.date):
@@ -115,7 +117,9 @@ class RemoteTimeField(RemoteField):
                         elif isinstance(field_dict["initial"], datetime.time):
                             field_dict["input_formats"] = settings.TIME_INPUT_FORMATS
                         elif isinstance(field_dict["initial"], datetime.datetime):
-                            field_dict["input_formats"] = settings.DATETIME_INPUT_FORMATS
+                            field_dict["input_formats"] = (
+                                settings.DATETIME_INPUT_FORMATS
+                            )
 
                     input_format = field_dict["input_formats"][0]
                     field_dict["initial"] = field_dict["initial"].strftime(input_format)
@@ -155,17 +159,23 @@ class RemoteFileField(RemoteField):
 
         if self.field.max_length:
             field_dict["max_length"] = self.field.max_length
-        field_dict.update(
-            {
-                "type": "array",
-                "items": {
-                    "description": "",
-                    "title": "",
-                    "type": "string",
-                    "widget": "file",
-                },
-            }
-        )
+
+        if "multiple" in self.field.widget.attrs:
+            field_dict.update(
+                {
+                    "type": "array",
+                    "items": {
+                        "description": "",
+                        "title": "",
+                        "type": "string",
+                        "widget": "file",
+                    },
+                }
+            )
+        else:
+            field_dict.update(
+                {"type": "string", "format": "data-url"},
+            )
 
         return field_dict
 
@@ -215,8 +225,8 @@ class RemoteModelChoiceField(RemoteChoiceField):
         for choice in field_dict.get("choices", []):
             if isinstance(choice["value"], ModelChoiceIteratorValue):
                 serialized_choices.append(choice["display"])
-        
-        field_dict.pop('choices', None)
+
+        field_dict.pop("choices", None)
         field_dict["enum"] = serialized_choices
 
         return field_dict
@@ -240,13 +250,13 @@ class RemoteMultipleChoiceField(RemoteChoiceField):
 
 class RemoteModelMultipleChoiceField(RemoteMultipleChoiceField):
     def as_dict(self):
-        field_dict =  super(RemoteModelMultipleChoiceField, self).as_dict()
+        field_dict = super(RemoteModelMultipleChoiceField, self).as_dict()
         serialized_choices = []
         for choice in field_dict.get("choices", []):
             if isinstance(choice["value"], ModelChoiceIteratorValue):
                 serialized_choices.append(choice["display"])
-        
-        field_dict.pop('choices', None)
+
+        field_dict.pop("choices", None)
         field_dict["enum"] = serialized_choices
 
         return field_dict
