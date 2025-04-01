@@ -32,6 +32,9 @@ class RemoteField(object):
         # if self.field.help_text != '':
         field_dict["description"] = self.field.help_text
 
+        if self.form_initial_data:
+            field_dict["default"] = self.form_initial_data
+
         if self.field.label != "":
             field_dict["title"] = self.field.label
 
