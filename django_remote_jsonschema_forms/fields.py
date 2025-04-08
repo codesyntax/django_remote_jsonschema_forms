@@ -6,7 +6,7 @@ from django.conf import settings
 
 from django_remote_jsonschema_forms import logger, widgets
 
-from django.forms.models import ModelChoiceIteratorValue
+from django.forms.models import ModelChoiceIteratorValue, ModelChoiceIterator
 
 
 class RemoteField(object):
@@ -103,31 +103,31 @@ class RemoteTimeField(RemoteField):
     def as_dict(self):
         field_dict = super(RemoteTimeField, self).as_dict()
 
-        field_dict["input_formats"] = self.field.input_formats
         try:
-            if field_dict["initial"]:
-                if callable(field_dict["initial"]):
-                    field_dict["initial"] = field_dict["initial"]()
+            if self.field.__class__.__name__ == "DateField":
+                field_dict.update(
+                    {"title": self.field.label, "type": "string", "format": "date"}
+                )
+            elif self.field.__class__.__name__ == "TimeField":
+                field_dict.update(
+                    {"title": self.field.label, "type": "string", "format": "time"}
+                )
+            else:
+                field_dict.update(
+                    {"title": self.field.label, "type": "string", "format": "date-time"}
+                )
+            if self.field.__class__.__name__ == "DateField":
+                input_format = settings.DATE_INPUT_FORMATS[0]
+            elif self.field.__class__.__name__ == "TimeField":
+                input_format = settings.TIME_INPUT_FORMATS[0]
+            else:
+                input_format = settings.DATETIME_INPUT_FORMATS[0]
 
-                # If initial value is datetime then convert it using first available input format
-                if isinstance(
-                    field_dict["initial"],
-                    (datetime.datetime, datetime.time, datetime.date),
-                ):
-                    if not len(field_dict["input_formats"]):
-                        if isinstance(field_dict["initial"], datetime.date):
-                            field_dict["input_formats"] = settings.DATE_INPUT_FORMATS
-                        elif isinstance(field_dict["initial"], datetime.time):
-                            field_dict["input_formats"] = settings.TIME_INPUT_FORMATS
-                        elif isinstance(field_dict["initial"], datetime.datetime):
-                            field_dict["input_formats"] = (
-                                settings.DATETIME_INPUT_FORMATS
-                            )
-
-                    input_format = field_dict["input_formats"][0]
-                    field_dict["initial"] = field_dict["initial"].strftime(input_format)
+            if "initial" in field_dict:
+                field_dict["initial"] = field_dict["initial"].strftime(input_format)
         except Exception as e:
             pass
+
         return field_dict
 
 
@@ -215,6 +215,8 @@ class RemoteChoiceField(RemoteField):
 
         field_dict["oneOf"] = []
         for key, value in self.field.choices:
+            if isinstance(key, ModelChoiceIteratorValue):
+                key = key.value
             field_dict["oneOf"].append({"const": key, "title": value})
 
         return field_dict
@@ -225,11 +227,12 @@ class RemoteModelChoiceField(RemoteChoiceField):
         field_dict = super(RemoteModelChoiceField, self).as_dict()
 
         serialized_choices = []
-        for choice in field_dict.get("choices", []):
-            if isinstance(choice["value"], ModelChoiceIteratorValue):
-                serialized_choices.append(choice["display"])
+        for choice in field_dict.get("oneOf", []):
+            if choice["const"] == "":
+                continue
+            serialized_choices.append(choice["const"])
 
-        field_dict.pop("choices", None)
+        field_dict.pop("oneOf", None)
         field_dict["enum"] = serialized_choices
 
         return field_dict

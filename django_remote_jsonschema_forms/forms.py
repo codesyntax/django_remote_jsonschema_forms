@@ -1,9 +1,11 @@
 from collections import OrderedDict
 
+from django import forms
 from django_remote_jsonschema_forms import fields, logger
 from django_remote_jsonschema_forms.utils import resolve_promise
 
-import json 
+import json
+
 
 class RemoteJSONSChemaForm(object):
     def __init__(self, form, *args, **kwargs):
@@ -202,36 +204,64 @@ class RemoteJSONSChemaForm(object):
 
     def uiSchema_as_dict(self):
         uiSchema = {}
-        
+
         for name in self.fields:
             field = self.form.fields[name]
             uiSchema[name] = {}
-            
+
             # Configurar widgets basados en el tipo de campo
             field_type = type(field).__name__
-            if field_type == "CharField" and getattr(field, 'widget', None):
+            if hasattr(field, "widget"):
                 widget_type = type(field.widget).__name__
+            else:
+                widget_type = None
+
+            if field_type == "CharField" and widget_type:
                 if widget_type == "Textarea":
                     uiSchema[name]["ui:widget"] = "tinymce"
                 elif widget_type == "PasswordInput":
                     uiSchema[name]["ui:widget"] = "password"
-            
+
             elif field_type == "BooleanField":
                 uiSchema[name]["ui:widget"] = "checkbox"
-            
+
             elif field_type == "ChoiceField":
                 uiSchema[name]["ui:widget"] = "select"
-            
+
             elif field_type == "FileField":
-                uiSchema[name]["ui:options"] = {"accept": getattr(field.widget, 'attrs', {}).get("accept", "*")}
+                uiSchema[name]["ui:options"] = {
+                    "accept": getattr(field.widget, "attrs", {}).get("accept", "*")
+                }
 
-                uiSchema[name]['items']= { 'ui:widget':'file'}
+                uiSchema[name]["items"] = {"ui:widget": "file"}
 
-            
+            elif field_type == "ModelChoiceField":
+                uiSchema[name]["ui:enumNames"] = [q.__str__() for q in field.queryset]
+
+            if widget_type == "HiddenInput":
+                uiSchema[name]["ui:widget"] = "hidden"
+
             if name in self.readonly_fields:
                 uiSchema[name]["ui:disabled"] = True
-            
+
             if name in self.excluded_fields:
                 continue
-            
+
         return resolve_promise(uiSchema)
+
+
+class BaseJSONSChemaForm(forms.ModelForm):
+
+    @classmethod
+    def remotejson2form(cls, data):
+        return cls(json.loads(data))
+
+    def get_json_schema(self):
+        remote_form = RemoteJSONSChemaForm(self)
+        form_schema = remote_form.as_dict()
+        return json.dumps(form_schema)
+
+    def get_ui_schema(self):
+        remote_form = RemoteJSONSChemaForm(self)
+        ui_schema = remote_form.uiSchema_as_dict()
+        return json.dumps(ui_schema)
