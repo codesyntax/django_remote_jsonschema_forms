@@ -16,13 +16,15 @@ setup(
     author_email="ggarcia@codesyntax.com",
     url="http://github.com/codesyntax/django_remote_jsonschema_forms/",
     long_description=open("README.md", "r").read(),
+    long_description_content_type="text/markdown",
     packages=[
         "django_remote_jsonschema_forms",
     ],
     package_data={},
     zip_safe=False,
     requires=[],
-    install_requires=[],
+    install_requires=["django>=4.2"],
+    python_requires=">=3.8",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
@@ -31,6 +33,11 @@ setup(
         "License :: MIT",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Utilities",
     ],
 )

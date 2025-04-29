@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 import datetime
-
 from collections import OrderedDict
 
 from django.conf import settings
 
-from django_remote_jsonschema_forms import logger, widgets
+from django_remote_jsonschema_forms import logger
 
 from django.forms.models import ModelChoiceIteratorValue, ModelChoiceIterator
 
@@ -57,8 +57,8 @@ class RemoteCharField(RemoteField):
             if self.field.widget.attrs["cols"]:
                 #                update_fields["maxLength"] = 750
                 update_fields["widget"] = "textarea"
-        except:
-            pass
+        except Exception as e:
+            logger.warning(e)
 
         field_dict.update(update_fields)
 
