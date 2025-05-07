@@ -18,6 +18,7 @@ setup(
     long_description=open("README.md", "r").read(),
     long_description_content_type='text/markdown',
     keywords="jsonschema,react,django,python",
+    license="MIT License",
     python_requires='>=3.9',
     packages=[
         "django_remote_jsonschema_forms",
@@ -30,7 +31,7 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
         "Framework :: Django",
-        "License-Expression :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
