@@ -19,6 +19,7 @@ setup(
     long_description_content_type='text/markdown',
 
     license="MIT",
+    python_requires='>=3.9',
     packages=[
         "django_remote_jsonschema_forms",
     ],
