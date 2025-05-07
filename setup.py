@@ -17,6 +17,7 @@ setup(
     url="http://github.com/codesyntax/django_remote_jsonschema_forms/",
     long_description=open("README.md", "r").read(),
     long_description_content_type='text/markdown',
+    license="MIT",
     packages=[
         "django_remote_jsonschema_forms",
     ],
@@ -29,7 +30,6 @@ setup(
         "Environment :: Web Environment",
         "Framework :: Django",
         "Intended Audience :: Developers",
-        "License-Expression :: MIT",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Topic :: Utilities",
