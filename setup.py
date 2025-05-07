@@ -18,7 +18,6 @@ setup(
     long_description=open("README.md", "r").read(),
     long_description_content_type='text/markdown',
     keywords="jsonschema,react,django,python",
-    license="MIT License",
     python_requires='>=3.9',
     packages=[
         "django_remote_jsonschema_forms",
