@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="django_remote_jsonschema_forms",
-    version="1.0.1.dev0",
+    version="1.0.1",
     description="A platform independent form serializer for Django.",
     long_description=long_description,
     long_description_content_type="text/markdown",
