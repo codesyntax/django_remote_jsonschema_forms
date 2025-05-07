@@ -17,7 +17,7 @@ setup(
     url="http://github.com/codesyntax/django_remote_jsonschema_forms/",
     long_description=open("README.md", "r").read(),
     long_description_content_type='text/markdown',
-
+    keywords="jsonschema,react,django,python",
     license="MIT",
     python_requires='>=3.9',
     packages=[
